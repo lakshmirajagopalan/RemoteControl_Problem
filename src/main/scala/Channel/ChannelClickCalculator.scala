@@ -1,9 +1,9 @@
-import Channel.Channels._
+import Channel.Problem._
 import Channel.Utility._
 
-package Channel {
+package Channel{
 
-class ChannelClickCalculator {
+class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, channelsToView: String) {
 
 
   private var curIndex: Int = 0
@@ -17,14 +17,47 @@ class ChannelClickCalculator {
   private var prevForNextIterationByMinChannelDownClick: Int = -1
   private var prevForNextIterationByUpDownClick: Int = -1
 
-  def calcMinClicks(channelLimits: String, channelsBlocked: String, channelsToView: String): Int = {
-    parseInput(channelLimits, channelsBlocked, channelsToView)
-    var minClicks: Int = GetNumOfDigits(InputChannelSequence(curIndex)); //Move to the first Channel to view by using the digit.
+
+  private val problemInstance:Problem = getProblemInstance(channelLimits, channelsBlocked, channelsToView)
+
+  //Calculates clicks to reach from a to b by down arrow keys
+  def calcDownClickCount(a: Int, b: Int): Int = {
+    var steps = 0
+    if (a <= b) {
+      val aWrappedAround = a + (problemInstance.getMaxChannel() - problemInstance.getMinChannel() + 1)
+      //For wraparound and the equal to is to simulate trying to get to the same channel via the down buttons
+      steps = ((aWrappedAround - b) - problemInstance.getBlockedChannelCount(problemInstance.getMinChannel(), a) - problemInstance.getBlockedChannelCount(b,problemInstance.getMaxChannel()) )
+    }
+    else
+      steps = (a - b) - problemInstance.getBlockedChannelCount(b, a)
+
+    steps
+  }
+
+  //Calculates clicks to reach from a to b by up arrow keys
+  def calcUpClickCount(a: Int, b: Int): Int = {
+    var steps:Int =0
+
+    if (a >= b) //For wraparound and the equal to is to simulate trying to get to the same channel via the up buttons.
+    {
+      val bWrappedAround = b + (problemInstance.getMaxChannel() - problemInstance.getMinChannel() + 1)
+      steps = (bWrappedAround - a) - problemInstance.getBlockedChannelCount(a, problemInstance.getMaxChannel()) - problemInstance.getBlockedChannelCount(problemInstance.getMinChannel(), b)
+    }
+    else
+      steps = (b - a) - problemInstance.getBlockedChannelCount(a, b)
+
+    steps
+  }
+
+
+  def calcMinClicks: Int = {
+
+    var minClicks: Int = GetNumOfDigits(problemInstance.getViewingChannelSequence(curIndex)); //Move to the first Channel to view by using the digit.
     //Assume, the channel obtained when switching on tv, is not the required channel to be viewed or is closed by any other combination
 
     //Calculates the minClicks required
-    for (curIndex <- 0 to InputChannelSequence.length - 2)
-      minClicks += calcMinClicksBetween(InputChannelSequence(curIndex), InputChannelSequence(curIndex + 1)
+    for (curIndex <- 0 to problemInstance.getViewingChannelSequence.length - 2)
+      minClicks += calcMinClicksBetween( problemInstance.getViewingChannelSequence(curIndex), problemInstance.getViewingChannelSequence(curIndex + 1) )
 
     return minClicks
   }
@@ -73,7 +106,7 @@ class ChannelClickCalculator {
     if (ups < downs) {
       //Track potential previous Channel for next iteration
       prevForNextIterationByUpDownClick = b - 1
-      while (isBlockedChannel(prevForNextIterationByUpDownClick))
+      while (problemInstance.isBlocked(prevForNextIterationByUpDownClick))
         prevForNextIterationByUpDownClick -= 1
 
       return ups
@@ -81,7 +114,7 @@ class ChannelClickCalculator {
     else {
       //Track potential previous Channel for next iteration
       prevForNextIterationByUpDownClick = b + 1
-      while (isBlockedChannel(prevForNextIterationByUpDownClick))
+      while (problemInstance.isBlocked(prevForNextIterationByUpDownClick))
         prevForNextIterationByUpDownClick += 1
 
       return downs
@@ -111,12 +144,12 @@ class ChannelClickCalculator {
   //We dont need to go to the max channel and use the up arrow, since the digits of the lower channel will be less than equal to the max channel.
   def calcMinClicksWithMinChannel(fromCh: Int, toCh: Int): Int = {
 
-    val minChannel: Int = getMinChannel()
+    val minChannel: Int = problemInstance.getMinChannel()
     val m: Int = GetNumOfDigits(minChannel) + calcDownClickCount(minChannel, toCh)
 
     //Track previous channel for next iteration
     prevForNextIterationByMinChannelDownClick = toCh + 1
-    while (isBlockedChannel(prevForNextIterationByMinChannelDownClick))
+    while (problemInstance.isBlocked(prevForNextIterationByMinChannelDownClick))
       prevForNextIterationByMinChannelDownClick += 1
 
     return m
@@ -124,5 +157,6 @@ class ChannelClickCalculator {
 
 }
 
-}
 
+}
+//
