@@ -1,4 +1,4 @@
-package Channel {
+package channel {
 
 object Utility {
 

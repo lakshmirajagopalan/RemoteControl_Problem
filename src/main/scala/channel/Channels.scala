@@ -1,4 +1,4 @@
-package Channel
+package channel
 
 
 class Problem(channelsToView: Array[Int], minChannel: Int, maxChannel: Int, blockedChannels: Array[Int]) {
@@ -17,12 +17,7 @@ class Problem(channelsToView: Array[Int], minChannel: Int, maxChannel: Int, bloc
 
   //Returns the number of Blocked Channel.Channels between min and max inclusive of both.
   def getBlockedChannelCount(rangeMin: Int, rangeMax: Int): Int = {
-    var n: Int = 0
-    for (i <- 0 to blockedChannels.length - 1)
-      for (j <- rangeMin to rangeMax)
-        if (blockedChannels(i) == j)
-          n += 1
-    n
+    blockedChannels.filter(b => b >= rangeMin && b <= rangeMax).size
   }
 
 

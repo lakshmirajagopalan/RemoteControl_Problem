@@ -1,11 +1,6 @@
-import Channel.Problem._
-import Channel.Utility._
+package channel
 
-package Channel{
-
-class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, channelsToView: String) {
-
-
+class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsToView: String) {
   private var curIndex: Int = 0
   //this is cur position in the array sequence
   private var prevChannel: Int = -1 //The previous channel visited before this.
@@ -18,7 +13,7 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
   private var prevForNextIterationByUpDownClick: Int = -1
 
 
-  private val problemInstance:Problem = getProblemInstance(channelLimits, channelsBlocked, channelsToView)
+  private val problemInstance:Problem = Problem.getProblemInstance(channelLimits, channelsBlocked, channelsToView)
 
   //Calculates clicks to reach from a to b by down arrow keys
   def calcDownClickCount(a: Int, b: Int): Int = {
@@ -37,7 +32,6 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
   //Calculates clicks to reach from a to b by up arrow keys
   def calcUpClickCount(a: Int, b: Int): Int = {
     var steps:Int =0
-
     if (a >= b) //For wraparound and the equal to is to simulate trying to get to the same channel via the up buttons.
     {
       val bWrappedAround = b + (problemInstance.getMaxChannel() - problemInstance.getMinChannel() + 1)
@@ -51,15 +45,13 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
 
 
   def calcMinClicks: Int = {
-
-    var minClicks: Int = GetNumOfDigits(problemInstance.getViewingChannelSequence(curIndex)); //Move to the first Channel to view by using the digit.
+    //Move to the first Channel to view by using the digit.
     //Assume, the channel obtained when switching on tv, is not the required channel to be viewed or is closed by any other combination
 
     //Calculates the minClicks required
-    for (curIndex <- 0 to problemInstance.getViewingChannelSequence.length - 2)
-      minClicks += calcMinClicksBetween( problemInstance.getViewingChannelSequence(curIndex), problemInstance.getViewingChannelSequence(curIndex + 1) )
-
-    return minClicks
+    val pairs: Array[(Int, Int)] = problemInstance.getViewingChannelSequence zip problemInstance.getViewingChannelSequence.tail
+    val minClicksBetweenPairs = pairs.map(t => calcMinClicksBetween(t._1, t._2))
+    Utility.GetNumOfDigits(problemInstance.getViewingChannelSequence(curIndex)) + minClicksBetweenPairs.reduce((sofar,cur) => sofar + cur)
   }
 
   def calcMinClicksBetween(fromCh: Int, toCh: Int): Int = {
@@ -70,7 +62,7 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
     //The effect can be seen if the next digit is 113(114 - 116 - 113) requiring only 2(back and a down button) if, prev channel had been 114.
 
     //Case 1: Calculate no. of clicks on pressing the digits of the channel
-    val digitClicks: Int = GetNumOfDigits(toCh)
+    val digitClicks: Int = Utility.GetNumOfDigits(toCh)
 
     //Case 2: Calculate no. of clicks for going to prev channel(back button)
     //Case 3: Calculate no. of clicks for going to prev channel(back button) and using up/down clicks to proceed to the required channel
@@ -83,7 +75,7 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
     val upDownArrowClicks: Int = calcUpDownClickCount(fromCh, toCh)
 
 
-    val minClicks: Int = minimum(digitClicks, backAndUpDownCombinationClicks, minChannelClickCount, upDownArrowClicks)
+    val minClicks: Int = Utility.minimum(digitClicks, backAndUpDownCombinationClicks, minChannelClickCount, upDownArrowClicks)
 
     //To Track what will be the prev Channel for the next iteration
     if (minClicks == digitClicks)
@@ -145,7 +137,7 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
   def calcMinClicksWithMinChannel(fromCh: Int, toCh: Int): Int = {
 
     val minChannel: Int = problemInstance.getMinChannel()
-    val m: Int = GetNumOfDigits(minChannel) + calcDownClickCount(minChannel, toCh)
+    val m: Int = Utility.GetNumOfDigits(minChannel) + calcDownClickCount(minChannel, toCh)
 
     //Track previous channel for next iteration
     prevForNextIterationByMinChannelDownClick = toCh + 1
@@ -156,7 +148,3 @@ class ChannelClickCalculator (channelLimits: String, channelsBlocked: String, ch
   }
 
 }
-
-
-}
-//
