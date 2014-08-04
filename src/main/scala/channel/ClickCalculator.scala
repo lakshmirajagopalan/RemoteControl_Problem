@@ -30,15 +30,15 @@ class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsTo
   }
 
   //Calculates clicks to reach from a to b by up arrow keys
-  def calcUpClickCount(a: Int, b: Int): Int = {
+  def calcUpClickCount(start: Int, end: Int): Int = {
     var steps:Int =0
-    if (a >= b) //For wraparound and the equal to is to simulate trying to get to the same channel via the up buttons.
+    if (start >= end) //For wraparound and the equal to is to simulate trying to get to the same channel via the up buttons.
     {
-      val bWrappedAround = b + (problemInstance.getMaxChannel() - problemInstance.getMinChannel() + 1)
-      steps = (bWrappedAround - a) - problemInstance.getBlockedChannelCount(a, problemInstance.getMaxChannel()) - problemInstance.getBlockedChannelCount(problemInstance.getMinChannel(), b)
+      val bWrappedAround = end + (problemInstance.getMaxChannel() - problemInstance.getMinChannel() + 1)
+      steps = (bWrappedAround - start) - problemInstance.getBlockedChannelCount(start, problemInstance.getMaxChannel()) - problemInstance.getBlockedChannelCount(problemInstance.getMinChannel(), end)
     }
     else
-      steps = (b - a) - problemInstance.getBlockedChannelCount(a, b)
+      steps = (end - start) - problemInstance.getBlockedChannelCount(start, end)
 
     steps
   }
@@ -89,28 +89,45 @@ class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsTo
 
     return minClicks
   }
+  
+  def getPreviousChannelUp(start: Int, end: Int) = {
+    if (start < end){
+      (start to end).map(x => (x, problemInstance.isBlocked(x))).filterNot(_._2).last._1
+    }else{
+      ((start to problemInstance.getMaxChannel()) ++ (problemInstance.getMinChannel() to end))
+        .map(x => (x, problemInstance.isBlocked(x)))
+        .filterNot(_._2)
+        .last
+        ._1
+    }
+  }
+
+  def getPreviousChannelDown(start: Int, end: Int) = {
+    if (start > end){
+      (end to start).map(x => (x, problemInstance.isBlocked(x))).filterNot(_._2).last._1
+    }else{
+      ((start to problemInstance.getMinChannel()).reverse ++ (problemInstance.getMaxChannel() to end by -1))
+        .map(x => (x, problemInstance.isBlocked(x)))
+        .filterNot(_._2)
+        .last
+        ._1
+    }
+  }
 
   //Calculates clicks to reach from a to b by up/down arrow keys
-  def calcUpDownClickCount(a: Int, b: Int): Int = {
+  def calcUpDownClickCount(start: Int, end: Int): Int = {
 
-    val ups: Int = calcUpClickCount(a, b)
-    val downs: Int = calcDownClickCount(a, b)
+    val ups: Int = calcUpClickCount(start, end)
+    val downs: Int = calcDownClickCount(start, end)
     if (ups < downs) {
-      //Track potential previous Channel for next iteration
-      prevForNextIterationByUpDownClick = b - 1
-      while (problemInstance.isBlocked(prevForNextIterationByUpDownClick))
-        prevForNextIterationByUpDownClick -= 1
-
-      return ups
+      prevForNextIterationByUpDownClick = getPreviousChannelUp(start, end)
+      ups
     }
     else {
-      //Track potential previous Channel for next iteration
-      prevForNextIterationByUpDownClick = b + 1
-      while (problemInstance.isBlocked(prevForNextIterationByUpDownClick))
-        prevForNextIterationByUpDownClick += 1
-
-      return downs
+      prevForNextIterationByUpDownClick = getPreviousChannelDown(start, end)
+      downs
     }
+
   }
 
   def calcMinClicksWithBack(fromCh: Int, toCh: Int): Int = {
@@ -140,10 +157,21 @@ class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsTo
     val m: Int = Utility.GetNumOfDigits(minChannel) + calcDownClickCount(minChannel, toCh)
 
     //Track previous channel for next iteration
-    prevForNextIterationByMinChannelDownClick = toCh + 1
-    while (problemInstance.isBlocked(prevForNextIterationByMinChannelDownClick))
-      prevForNextIterationByMinChannelDownClick += 1
+    // TODO: Edge case where toCh is the end of the list
 
+    prevForNextIterationByMinChannelDownClick = toCh + 1
+
+//    while(problemInstance.isBlocked(prevForNextIterationByMinChannelDownClick) && !problemInstance.isWithinChannelLimits(prevForNextIterationByMinChannelDownClick)){
+//      
+//    }
+
+    if(toCh == problemInstance.getMaxChannel())
+      prevForNextIterationByMinChannelDownClick = problemInstance.getMinChannel()
+    else {
+        prevForNextIterationByMinChannelDownClick = toCh + 1
+        while (problemInstance.isBlocked(prevForNextIterationByMinChannelDownClick))
+        prevForNextIterationByMinChannelDownClick += 1
+    }
     return m
   }
 
