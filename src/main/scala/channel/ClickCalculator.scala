@@ -133,19 +133,21 @@ class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsTo
   def calcMinClicksWithBack(fromCh: Int, toCh: Int): Int = {
 
     var backAndUpDownCombinationClicks: Int = 999999; //arbitarily large number for the case of the calculation of the back button for the first channel
-    if (curIndex >= 1) {
+
+    //if (curIndex >= 1) {
+     if(fromCh != problemInstance.getViewingChannelSequence(0)) {
       backAndUpDownCombinationClicks = 1
       //Track potential previous Channel for next iteration
       prevForNextIterationByBackChannelUpDownClick = fromCh; //If just back is pressed, it is the current channel that becomes
       //the prev channel for next iteration
       if (!(prevChannel == toCh)) {
-        backAndUpDownCombinationClicks += calcUpDownClickCount(prevChannel, toCh)
-        prevForNextIterationByBackChannelUpDownClick = prevForNextIterationByUpDownClick;
+          backAndUpDownCombinationClicks += calcUpDownClickCount(prevChannel, toCh)
+           prevForNextIterationByBackChannelUpDownClick = prevForNextIterationByUpDownClick
         //If up/down combination is used with back key, update the
         //previous channel for next iteration from what was updated in up/down click counts method.
       }
     }
-    return backAndUpDownCombinationClicks
+    backAndUpDownCombinationClicks
   }
 
   //Case 4: Calculate clicks by moving to minimum channel and using wraparound (down key)
@@ -156,21 +158,14 @@ class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsTo
     val minChannel: Int = problemInstance.getMinChannel()
     val m: Int = Utility.GetNumOfDigits(minChannel) + calcDownClickCount(minChannel, toCh)
 
-    //Track previous channel for next iteration
-    // TODO: Edge case where toCh is the end of the list
-
     prevForNextIterationByMinChannelDownClick = toCh + 1
-
-//    while(problemInstance.isBlocked(prevForNextIterationByMinChannelDownClick) && !problemInstance.isWithinChannelLimits(prevForNextIterationByMinChannelDownClick)){
-//      
-//    }
 
     if(toCh == problemInstance.getMaxChannel())
       prevForNextIterationByMinChannelDownClick = problemInstance.getMinChannel()
     else {
         prevForNextIterationByMinChannelDownClick = toCh + 1
         while (problemInstance.isBlocked(prevForNextIterationByMinChannelDownClick))
-        prevForNextIterationByMinChannelDownClick += 1
+          prevForNextIterationByMinChannelDownClick += 1
     }
     return m
   }
