@@ -1,6 +1,4 @@
-package channel
-
-import org.scalatest.{ShouldMatchers, FlatSpec}
+import org.scalatest.{FlatSpec, ShouldMatchers}
 
 /**
  * Created by lakshmi on 4/8/14.

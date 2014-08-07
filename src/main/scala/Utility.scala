@@ -1,5 +1,3 @@
-package channel {
-
 object Utility {
 
   def GetNumOfDigits(digit: Int): Int = {
@@ -28,6 +26,4 @@ object Utility {
   def swap(a: Int, b: Int): Tuple2[Int, Int] = {
     (b, a)
   }
-}
-
 }

@@ -1,4 +1,4 @@
-package channel
+
 
 class ClickCalculator(channelLimits: String, channelsBlocked: String, channelsToView: String) {
   private var curIndex: Int = 0

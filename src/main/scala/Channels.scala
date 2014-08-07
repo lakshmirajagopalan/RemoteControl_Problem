@@ -1,6 +1,3 @@
-package channel
-
-
 class Problem(channelsToView: Array[Int], minChannel: Int, maxChannel: Int, blockedChannels: Array[Int]) {
 
   def isWithinChannelLimits(ch: Int) = (ch >= minChannel) && (ch <= maxChannel)
