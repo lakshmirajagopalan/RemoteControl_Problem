@@ -1,7 +1,7 @@
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{ShouldMatchers, FlatSpec}
+
 
 class ClickCalculatorTest extends FlatSpec with ShouldMatchers {
 
